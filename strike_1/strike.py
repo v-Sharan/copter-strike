@@ -12,12 +12,12 @@ if __name__ == "__main__":
     strike = Kamikaze(vehicle=vehicle)
     flag = 0
     while True:
-        with open(current_directory + "/flag.csv", "r") as csvfile:
-            csvreader = csv.reader(csvfile)
-            for row in csvreader:
-                flag = int(row[0])
-        if flag != 0:
-            break
+        # with open(current_directory + "/flag.csv", "r") as csvfile:
+        #     csvreader = csv.reader(csvfile)
+        #     for row in csvreader:
+        #         flag = int(row[0])
+        # if flag != 0:
+        #     break
         try:
             tlat, tlon = gimbal.get_target_coords()
             if tlat > 0 and tlon > 0:

@@ -3,12 +3,11 @@ from math import sin, cos, sqrt, atan2, radians, degrees, atan
 from dronekit import VehicleMode, Vehicle, connect
 from pymavlink import mavutil
 import pid
-from typing import Self
 from gimbal_cls import Gimbal
 
 
 class Kamikaze:
-    def __init__(self: Self, vehicle: Vehicle | None) -> None:
+    def __init__(self, vehicle: Vehicle):
         self.vehicle = vehicle
         self.tlat = 0
         self.tlon = 0
@@ -32,7 +31,7 @@ class Kamikaze:
         self.vel_speed_max = 20
         self.vel_accel = 0.5
 
-    def condition_yaw(self: Self, heading: float, relative: bool = False) -> None:
+    def condition_yaw(self, heading: float, relative: bool = False) -> None:
 
         is_relative = 1 if relative else 0
 
@@ -53,12 +52,12 @@ class Kamikaze:
         self.vehicle.send_mavlink(msg)
 
     def shift_to_origin(
-        self: Self, pt: list[float], width: float, height: float
+        self, pt: list[float], width: float, height: float
     ) -> None:
         return ((pt[0] - width / 2.0), (-1 * pt[1] + height / 2.0))
 
     def set_velocity(
-        self: Self,
+        self,
         velocity_x: float,
         velocity_y: float,
         velocity_z: float,
@@ -87,7 +86,7 @@ class Kamikaze:
             self.vehicle.send_mavlink(msg)
 
     def get_ef_velocity_vector(
-        self: Self, pitch: float, yaw: float, speed: float
+        self, pitch: float, yaw: float, speed: float
     ) -> tuple[float]:
         cos_pitch = cos(pitch)
         x = speed * cos(yaw) * cos_pitch
@@ -96,7 +95,7 @@ class Kamikaze:
         return x, y, z
 
     def gps_distance(
-        self: Self, lat1: float, lon1: float, lat2: float, lon2: float
+        self, lat1: float, lon1: float, lat2: float, lon2: float
     ) -> float:
         """return distance between two points in meters,
         coordinates are in degrees
@@ -115,7 +114,7 @@ class Kamikaze:
         return self.radius_of_earth * c
 
     def gps_bearing(
-        self: Self, lat1: float, lon1: float, lat2: float, lon2: float
+        self, lat1: float, lon1: float, lat2: float, lon2: float
     ) -> float:
         """return bearing between two points in degrees, in range 0-360
         thanks to http://www.movable-type.co.uk/scripts/latlong.html"""
@@ -133,11 +132,11 @@ class Kamikaze:
             bearing += 360.0
         return bearing
 
-    def update_target(self: Self, lat: float, lon: float) -> None:
+    def update_target(self, lat: float, lon: float) -> None:
         self.tlat = lat
         self.tlon = lon
 
-    def move_to_target(self: Self) -> float:
+    def move_to_target(self) -> float:
 
         lat1 = self.vehicle.location.global_frame.lat
         lon1 = self.vehicle.location.global_frame.lon
@@ -184,30 +183,33 @@ class Kamikaze:
         return alt
 
 
-# if __name__ == "__main__":
-#     vehicle = connect("172.24.192.1:14560")
-#     print(vehicle)
-#     gimbal = Gimbal(host="192.168.6.215")
-#     strike = Kamikaze(vehicle=vehicle)
-#     strike.update_target(lat=13.3902876, lon=80.2300644)
-#     while True:
-#         try:
-#             alt = strike.move_to_target()
-#             tlat, tlon = gimbal.get_target_coords()
-#             strike.update_target(lat=tlat, lon=tlon)
-#             print(tlat, tlon)
-#             if alt < 30:
-#                 vehicle.mode = VehicleMode("RTL")
-#                 time.sleep(0.5)
-#                 vehicle.mode = VehicleMode("RTL")
-#                 time.sleep(0.5)
-#                 vehicle.mode = VehicleMode("RTL")
-#                 time.sleep(0.5)
-#                 break
-#         except KeyboardInterrupt:
-#             vehicle.close()
-#             gimbal.stop()
+if __name__ == "__main__":
+    vehicle = connect("172.24.192.1:14552")
+    print(vehicle)
+    gimbal = Gimbal(host="192.168.6.215")
+    strike = Kamikaze(vehicle=vehicle)
+    strike.update_target(lat=13.3902876, lon=80.2300644)
+    while True:
+        try:
+            alt = strike.move_to_target()
+            tlat, tlon = gimbal.get_target_coords()
+            if tlat > 0 and tlon > 0:
+                strike.update_target(lat=tlat, lon=tlon)
+            if gimbal.tlat > 0 and gimbal.tlon > 0:
+                alt = strike.move_to_target()
+                if alt <= 20:
+                    vehicle.mode = VehicleMode("RTL")
+                    time.sleep(0.5)
+                    vehicle.mode = VehicleMode("RTL")
+                    time.sleep(0.5)
+                    vehicle.mode = VehicleMode("RTL")
+                    time.sleep(0.5)
+                    break
+        except KeyboardInterrupt:
+            vehicle.close()
+            gimbal.stop()
+        time.sleep(0.1)
 
-#     vehicle.close()
-#     gimbal.stop()
-#     print("Connection close")
+    vehicle.close()
+    gimbal.stop()
+    print("Connection close")
