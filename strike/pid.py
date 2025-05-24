@@ -3,9 +3,8 @@ pid class : implements a pid controller
 
 """
 
-import math
 import time
-
+from math import radians
 
 class pid(object):
 
@@ -29,8 +28,10 @@ class pid(object):
             self.integrator,
         )
 
-    # get_dt - returns time difference since last get_dt call
     def get_dt(self, max_dt):
+        """
+        get_dt - returns time difference since last get_dt call
+        """
         now = time.time()
         time_diff = now - self.last_update
         self.last_update = now
@@ -39,46 +40,60 @@ class pid(object):
         else:
             return time_diff
 
-    # get_p - return p term
+    
     def get_p(self, error):
+        """
+        get_p - returns p term
+        """
         return self.p_gain * error
 
-    # get_i - return i term
     def get_i(self, error, dt):
+        """
+        get_i - returns i term
+        """
         self.integrator = self.integrator + error * self.i_gain * dt
         self.integrator = min(self.integrator, self.imax)
         self.integrator = max(self.integrator, -self.imax)
         return self.integrator
 
-    # get_d - return d term
     def get_d(self, error, dt):
+        """
+        get_d - returns d term
+        """
         if self.last_error is None:
             self.last_error = error
         ret = (error - self.last_error) * self.d_gain * dt
         self.last_error = error
         return ret
 
-    # get pi - return p and i terms
     def get_pi(self, error, dt):
+        """
+        get_pi - returns p and i terms
+        """
         return self.get_p(error) + self.get_i(error, dt)
 
-    # get pid - return p, i and d terms
     def get_pid(self, error, dt):
+        """
+        get_pid - returns p, i and d terms
+        """
         return self.get_p(error) + self.get_i(error, dt) + self.get_d(error, dt)
 
-    # get_integrator - return built up i term
     def get_integrator(self):
+        """
+        get_integrator - returns built up i term
+        """
         return self.integrator
 
-    # reset_I - clears I term
     def reset_I(self):
+        """
+        reset_I - clears I term
+        """
         self.integrator = 0
 
-    # main - used to test the class
     def main(self):
 
         # print object
-        # print "Test PID: %s" % test_pid
+        print("Test PID: %s" % self)
 
         # run it through a test
         for i in range(0, 100):
@@ -91,9 +106,11 @@ class pid(object):
                 % (i, result, result_p, result_i, result_d, self.get_integrator())
             )
 
-
-# run the main routine if this is file is called from the command line
 if __name__ == "__main__":
     # create pid object P, I, D, IMAX
-    test_pid = pid(1.0, 0.5, 0.01, 50)
+    xy_p = 1.0
+    xy_i = 1.0
+    xy_d = 1.0
+    xy_imax = 10.0
+    test_pid = pid(xy_p, xy_i, xy_d, radians(xy_imax))
     test_pid.main()

@@ -37,12 +37,12 @@ dist_to_vel = 0.15  ##0.15 m/s  ###
 descent_radius = 1  # in m/s
 last_set_velocity = 0
 vel_update_rate = 0.1  ##sec
-descent_rate = 0.5  # 0.5
+descent_rate = 0.3  # 0.5
 
-vel_speed_min = 5
-vel_speed_max = 15  # default 4  .........change this parameter to adjust decent speed
+vel_speed_min = 19
+vel_speed_max = 29  # default 4  .........change this parameter to adjust decent speed
 
-vel_accel = 0.5  # 0.5 - maximum acceleration in m/s/s
+vel_accel = 0.3  # 0.5 - maximum acceleration in m/s/s
 
 
 # Simulator flag
@@ -51,7 +51,7 @@ SIM = False
 update_rate = 0.01
 rcCMD = [1500, 1500, 1500, 1000, 1000, 1000, 1000, 1000]
 
-vehicle = connect("udpin:172.24.192.1:14551", baud=57600, wait_ready=True)
+vehicle = connect("udpin:172.24.192.1:14552", wait_ready=True)
 print(vehicle)
 # ....uav...inital pos.....
 lat1 = vehicle.location.global_frame.lat
@@ -264,14 +264,14 @@ def move_to_target(lat, lon):
         guided_target_vel[0], guided_target_vel[1], guided_target_vel[2], yaw_final
     )
 
-    if alt < 30:
-        vehicle.mode = VehicleMode("RTL")
-        time.sleep(0.5)
-        vehicle.mode = VehicleMode("RTL")
-        time.sleep(0.5)
+    # if alt < 30:
+    #     vehicle.mode = VehicleMode("RTL")
+    #     time.sleep(0.5)
+    #     vehicle.mode = VehicleMode("RTL")
+    #     time.sleep(0.5)
 
-        vehicle.mode = VehicleMode("RTL")
-        time.sleep(1)
+    #     vehicle.mode = VehicleMode("RTL")
+    #     time.sleep(1)
 
 
 def geo_loop(latitude, longitude, altitude):
@@ -323,5 +323,6 @@ def main(t_lat, t_lon):
 
 
 if __name__ == "__main__":
-    lat, lon = input().split(" ")
-    main(float(lat), float(lon))
+    tlat = 13.3898388
+    tlon = 80.2309978
+    main(t_lat=tlat,t_lon=tlon)
